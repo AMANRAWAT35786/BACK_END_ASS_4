@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 4 Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 10px; }
+    #messages { list-style: none; padding: 0; border: 1px solid #ccc; height: 300px; overflow-y: scroll; margin: 10px 0; }
+    #messages li { padding: 4px 8px; border-bottom: 1px solid #eee; }
+    input[type=text] { width: 100%; box-sizing: border-box; padding: 8px; margin: 4px 0; }
+    button { padding: 8px 16px; margin: 4px 0; cursor: pointer; }
+    .status { color: #666; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h2>Secure Chat</h2>
+
+  <div>
+    <label>JWT Token:</label>
+    <input type="text" id="tokenInput" placeholder="Paste your login token here">
+    <button id="connectBtn">Connect</button>
+    <span id="status" class="status">Disconnected</span>
+  </div>
+
+  <ul id="messages"></ul>
+
+  <div>
+    <input type="text" id="messageInput" placeholder="Type a message..." disabled>
+    <button id="sendBtn" disabled>Send</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let socket = null;
+    const tokenInput = document.getElementById("tokenInput");
+    const connectBtn = document.getElementById("connectBtn");
+    const status = document.getElementById("status");
+    const messages = document.getElementById("messages");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    connectBtn.addEventListener("click", () => {
+      const token = tokenInput.value.trim();
+      if (!token) return alert("Please enter a JWT token");
+
+      if (socket) socket.disconnect();
+
+      socket = io({ auth: { token } });
+
+      socket.on("connect", () => {
+        status.textContent = "Connected (" + socket.id + ")";
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+      });
+
+      socket.on("connect_error", (err) => {
+        status.textContent = "Error: " + err.message;
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+      });
+
+      socket.on("chatMessage", (data) => {
+        const li = document.createElement("li");
+        li.textContent = data.username + ": " + data.message;
+        messages.appendChild(li);
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      socket.on("disconnect", () => {
+        status.textContent = "Disconnected";
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+      });
+    });
+
+    function sendMessage() {
+      const msg = messageInput.value.trim();
+      if (!msg || !socket) return;
+      socket.emit("chatMessage", msg);
+      messageInput.value = "";
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
