@@ -1,4 +1,10 @@
 require("dotenv").config();
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET environment variable is missing");
+  process.exit(1);
+}
+
 const http = require("http");
 const express = require("express");
 const path = require("path");
