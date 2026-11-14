@@ -1,3 +1,6 @@
 node_modules/
 .env
 VIVA_NOTES.md
+*.log
+scratch*.js
+seed*.js
