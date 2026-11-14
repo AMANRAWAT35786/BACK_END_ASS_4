@@ -42,5 +42,3 @@ Server runs on `http://localhost:5000` by default.
 Real-time chat is available at `http://localhost:5000/chat.html` (requires JWT token).
 
 ## Screenshots
-
-<!-- Add screenshots here -->
